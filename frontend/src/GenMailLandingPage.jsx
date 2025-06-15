@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 export default function GenMailLandingPage() {
+  const [showResponse, setShowResponse] = useState(false);
+  const [generatedResponse, setGeneratedResponse] = useState("");
+
+  const handleGenerate = () => {
+    // Simulate generation (you'll replace this with real API logic)
+    setGeneratedResponse("Thank you for your email. I appreciate your message and will get back to you shortly.");
+    setShowResponse(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Navbar */}
@@ -51,12 +60,25 @@ export default function GenMailLandingPage() {
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="responseBox">Generated Response</Label>
-              <Textarea id="responseBox" placeholder="Your AI-generated reply will appear here..." className="mt-1 h-40" readOnly />
-            </div>
+            {showResponse && (
+              <div>
+                <Label htmlFor="responseBox">Generated Response</Label>
+                <Textarea
+                  id="responseBox"
+                  placeholder="Your AI-generated reply will appear here..."
+                  className="mt-1 h-40"
+                  readOnly
+                  value={generatedResponse}
+                />
+              </div>
+            )}
 
-            <Button className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 transition-all">Generate</Button>
+            <Button
+              className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 transition-all"
+              onClick={handleGenerate}
+            >
+              Generate
+            </Button>
           </CardContent>
         </Card>
       </section>
