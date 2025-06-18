@@ -25,41 +25,26 @@ function getEmailContent() {
     return "";
   }
 }
+
 function createAIButton() {
   const wrapper = document.createElement("div");
   wrapper.className = "ai-reply-wrapper";
-  wrapper.style.position = "relative";
-  wrapper.style.display = "inline-block";
+  wrapper.setAttribute("data-selected-tone", "professional");
 
   const button = document.createElement("div");
   button.className = "ai-reply-button";
   button.innerHTML = "AI Reply ▼";
   button.setAttribute("role", "button");
   button.setAttribute("data-tooltip", "Generate AI Reply");
-  button.style.cursor = "pointer";
-  button.style.padding = "5px 10px";
-  button.style.border = "1px solid #ccc";
-  button.style.borderRadius = "4px";
-  button.style.background = "#f1f3f4";
 
   const dropdown = document.createElement("div");
   dropdown.className = "ai-dropdown";
-  dropdown.style.position = "absolute";
-  dropdown.style.top = "100%";
-  dropdown.style.left = "0";
-  dropdown.style.background = "#fff";
-  dropdown.style.border = "1px solid #ccc";
-  dropdown.style.borderRadius = "4px";
-  dropdown.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
-  dropdown.style.display = "none";
-  dropdown.style.zIndex = "9999";
 
   const tones = ["Professional", "Casual", "Friendly", "Concise"];
   tones.forEach((tone) => {
     const option = document.createElement("div");
+    option.className = "ai-dropdown-option";
     option.textContent = tone;
-    option.style.padding = "8px 12px";
-    option.style.cursor = "pointer";
     option.addEventListener("click", () => {
       wrapper.setAttribute("data-selected-tone", tone.toLowerCase());
       dropdown.style.display = "none";
@@ -71,10 +56,9 @@ function createAIButton() {
   button.addEventListener("click", (e) => {
     dropdown.style.display =
       dropdown.style.display === "none" ? "block" : "none";
-    e.stopPropagation(); // Prevent body click from hiding it immediately
+    e.stopPropagation();
   });
 
-  // Hide dropdown if clicking elsewhere
   document.body.addEventListener("click", () => {
     dropdown.style.display = "none";
   });
@@ -83,6 +67,7 @@ function createAIButton() {
   wrapper.appendChild(dropdown);
   return wrapper;
 }
+
 
 function injectButton() {
   const existingButton = document.querySelector(".ai-reply-button");
