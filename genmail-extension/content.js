@@ -31,12 +31,20 @@ function createAIButton() {
   wrapper.className = "ai-reply-wrapper";
   wrapper.setAttribute("data-selected-tone", "professional");
 
-  const button = document.createElement("div");
-  button.className = "ai-reply-button";
-  button.innerHTML = "AI Reply ▼";
-  button.setAttribute("role", "button");
-  button.setAttribute("data-tooltip", "Generate AI Reply");
+  // Main button for generation
+  const mainButton = document.createElement("div");
+  mainButton.className = "ai-reply-button";
+  mainButton.textContent = "AI Reply";
+  mainButton.setAttribute("role", "button");
+  mainButton.setAttribute("data-tooltip", "Generate AI Reply");
 
+  // Small dropdown toggle
+  const arrowButton = document.createElement("div");
+  arrowButton.className = "ai-reply-dropdown-toggle";
+  arrowButton.innerHTML = "&#x25BC;"; // ▼
+  arrowButton.setAttribute("title", "Select tone");
+
+  // Dropdown menu
   const dropdown = document.createElement("div");
   dropdown.className = "ai-dropdown";
 
@@ -48,33 +56,35 @@ function createAIButton() {
     option.addEventListener("click", () => {
       wrapper.setAttribute("data-selected-tone", tone.toLowerCase());
       dropdown.style.display = "none";
-      button.innerHTML = `AI Reply ▼ (${tone})`;
+      mainButton.textContent = `AI Reply (${tone})`;
     });
     dropdown.appendChild(option);
   });
 
-  button.addEventListener("click", (e) => {
+  // Toggle dropdown on arrow click
+  arrowButton.addEventListener("click", (e) => {
+    e.stopPropagation(); // prevent closing from body listener
     dropdown.style.display =
       dropdown.style.display === "none" ? "block" : "none";
-    e.stopPropagation();
   });
 
   document.body.addEventListener("click", () => {
     dropdown.style.display = "none";
   });
 
-  wrapper.appendChild(button);
+  // Group button + arrow together
+  const buttonGroup = document.createElement("div");
+  buttonGroup.className = "ai-button-group";
+  buttonGroup.appendChild(mainButton);
+  buttonGroup.appendChild(arrowButton);
+
+  wrapper.appendChild(buttonGroup);
   wrapper.appendChild(dropdown);
   return wrapper;
 }
 
-
 function injectButton() {
-  const existingButton = document.querySelector(".ai-reply-button");
-  const tone =
-    button.closest(".ai-reply-wrapper")?.getAttribute("data-selected-tone") ||
-    "professional";
-
+  const existingButton = document.querySelector(".ai-reply-wrapper");
   if (existingButton) existingButton.remove();
 
   const toolbar = findComposeToolbar();
@@ -82,16 +92,26 @@ function injectButton() {
     console.log("Toolbar not found");
     return;
   }
+
   console.log("Creating AI Button");
-  const button = createAIButton();
-  button.classList.add("ai-reply-button");
+
+  const wrapper = createAIButton(); // wrapper includes the button and dropdown
+  const button = wrapper.querySelector(".ai-reply-button"); // actual button inside wrapper
 
   button.addEventListener("click", async () => {
+    // Prevent dropdown toggle click from triggering generate logic
+    if (button.getAttribute("data-skip-next-click") === "true") {
+      button.removeAttribute("data-skip-next-click");
+      return;
+    }
+
     try {
       button.innerHTML = " Generating...";
       button.disabled = true;
 
       const emailContent = getEmailContent();
+      const tone = wrapper.getAttribute("data-selected-tone") || "professional";
+
       const response = await fetch("http://localhost:8080/api/email/generate", {
         method: "POST",
         headers: {
@@ -102,9 +122,11 @@ function injectButton() {
           tone: tone,
         }),
       });
+
       if (!response.ok) {
         throw new Error("API Request failed");
       }
+
       const generatedReply = await response.text();
       const composeBox = document.querySelector(
         '[role = "textbox"][g_editable = "true"]'
@@ -119,11 +141,12 @@ function injectButton() {
       console.error(error);
       alert("Failed to generate the reply");
     } finally {
-      button.innerHTML = "AI Reply";
+      button.innerHTML = "AI Reply ▼";
       button.disabled = false;
     }
   });
-  toolbar.insertBefore(button, toolbar.firstChild);
+
+  toolbar.insertBefore(wrapper, toolbar.firstChild);
 }
 
 const observer = new MutationObserver((mutations) => {
