@@ -41,7 +41,11 @@ function createAIButton() {
   // Small dropdown toggle
   const arrowButton = document.createElement("div");
   arrowButton.className = "ai-reply-dropdown-toggle";
-  arrowButton.innerHTML = "&#x25BC;"; // ▼
+  arrowButton.innerHTML = `
+  <svg class="ai-dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M7 10l5 5 5-5H7z"/>
+  </svg>
+`; // dropdown icon svg
   arrowButton.setAttribute("title", "Select tone");
 
   // Dropdown menu
@@ -68,9 +72,16 @@ function createAIButton() {
       dropdown.style.display === "none" ? "block" : "none";
   });
 
-  document.body.addEventListener("click", () => {
-    dropdown.style.display = "none";
-  });
+  document.body.addEventListener(
+    "click",
+    (e) => {
+      const isInsideDropdown = wrapper.contains(e.target);
+      if (!isInsideDropdown) {
+        dropdown.style.display = "none";
+      }
+    },
+    true
+  );
 
   // Group button + arrow together
   const buttonGroup = document.createElement("div");
