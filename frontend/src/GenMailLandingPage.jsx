@@ -4,17 +4,60 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import axios from "axios";
 
 export default function GenMailLandingPage() {
-  const [showResponse, setShowResponse] = useState(false);
+  const [emailContent, setEmailContent] = useState("");
+  const [tone, setTone] = useState("");
   const [generatedResponse, setGeneratedResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error,setError] = useState('');
+  const [showResponse, setShowResponse] = useState(false);
+  const [toneMode, setToneMode] = useState("single"); // 'single' or 'multi'
+  const [multiResponses, setMultiResponses] = useState([]); // store 3 responses
 
-  const handleGenerate = () => {
-    // Simulate generation (you'll replace this with real API logic)
-    setGeneratedResponse("Thank you for your email. I appreciate your message and will get back to you shortly.");
-    setShowResponse(true);
-  };
+const handleGenerate = async () => {
+  setLoading(true);
+  setError('');
+  setShowResponse(false);
+  setGeneratedResponse("");
+  setMultiResponses([]);
+  try{
+     if (toneMode === "single") {
+    // handle single tone
+   const response = await axios.post("http://localhost:8080/api/email/generate", {
+      emailContent,
+      tone
+    });
+    setGeneratedResponse(typeof response.data === 'string' ? response.data : JSON.stringify(response.data));
+  } else {
+    // handle multi-tone
+    const tones = ["formal", "casual", "friendly"];
+    const response= await axios.post("http://localhost:8080/api/email/generate",{
+      emailContent,
+      tones
+    });
+    setMultiResponses(typeof response.data === 'string' ? response.data : JSON.stringify(response.data));
+  }
+     setShowResponse(true);
+  }
+  catch (error){
+    console.error(error);
+    setError("Failed to generate response");
+  }
+  finally{
+    setLoading(false);
+  }
+  
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -31,9 +74,12 @@ export default function GenMailLandingPage() {
 
       {/* Hero Section */}
       <section className="text-center py-20 px-4 bg-gradient-to-b from-white to-blue-50">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Get your AI Generated response now</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+          Get your AI Generated response now
+        </h1>
         <p className="text-lg text-gray-600 max-w-xl mx-auto mb-10">
-          GenMail helps you craft perfect email replies using AI. Whether you're responding to a boss, client, or friend — we got you.
+          GenMail helps you craft perfect email replies using AI. Whether you're
+          responding to a boss, client, or friend — we got you.
         </p>
 
         {/* Input Card */}
@@ -41,26 +87,54 @@ export default function GenMailLandingPage() {
           <CardContent className="flex flex-col gap-4">
             <div>
               <Label htmlFor="emailInput">Enter your email</Label>
-              <Textarea id="emailInput" placeholder="Paste the email you received here..." className="mt-1 h-40" />
+              <Textarea
+                id="emailInput"
+                placeholder="Paste the email you received here..."
+                className="mt-1 h-40"
+                value={emailContent}
+                onChange={(e) => setEmailContent(e.target.value)}
+              />
             </div>
-
             <div>
-              <Label htmlFor="toneSelect">Select Tone</Label>
-              <Select>
+              <Label htmlFor="toneMode">Tone Mode</Label>
+              <Select
+                value={toneMode}
+                onValueChange={(value) => setToneMode(value)}
+              >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Choose a tone" />
+                  <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="formal">Formal</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="apologetic">Apologetic</SelectItem>
-                  <SelectItem value="persuasive">Persuasive</SelectItem>
+                  <SelectItem value="single">Single Tone</SelectItem>
+                  <SelectItem value="multi">Multi Tone</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {showResponse && (
+            {toneMode === "single" && (
+              <div>
+                <Label htmlFor="toneSelect">Select Tone</Label>
+                <Select onValueChange={(value) => setTone(value)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Choose a tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="formal">Formal</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="apologetic">Apologetic</SelectItem>
+                    <SelectItem value="persuasive">Persuasive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Button
+              className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 transition-all"
+              onClick={handleGenerate}
+              disabled={!emailContent || loading}
+            >
+              Generate
+            </Button>
+            {showResponse && toneMode === "single" && (
               <div>
                 <Label htmlFor="responseBox">Generated Response</Label>
                 <Textarea
@@ -70,15 +144,28 @@ export default function GenMailLandingPage() {
                   readOnly
                   value={generatedResponse}
                 />
+                <Button onClick ={() =>navigator.clipboard.writeText(generatedResponse)} >Copy To Clipboard</Button>
               </div>
+              
             )}
 
-            <Button
-              className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 transition-all"
-              onClick={handleGenerate}
-            >
-              Generate
-            </Button>
+            {showResponse && toneMode === "multi" && (
+              <div className="flex flex-col gap-4">
+                {multiResponses.map((res, index) => (
+                  <div key={index}>
+                    <Label>
+                      {res.tone.charAt(0).toUpperCase() + res.tone.slice(1)}{" "}
+                      Tone
+                    </Label>
+                    <Textarea
+                      className="mt-1 h-32"
+                      readOnly
+                      value={res.response}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </section>
