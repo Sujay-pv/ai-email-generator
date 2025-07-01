@@ -18,46 +18,57 @@ export default function GenMailLandingPage() {
   const [tone, setTone] = useState("");
   const [generatedResponse, setGeneratedResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error,setError] = useState('');
+  const [error, setError] = useState("");
   const [showResponse, setShowResponse] = useState(false);
   const [toneMode, setToneMode] = useState("single"); // 'single' or 'multi'
   const [multiResponses, setMultiResponses] = useState([]); // store 3 responses
+  const [showToast, setShowToast] = useState(false);
 
-const handleGenerate = async () => {
-  setLoading(true);
-  setError('');
-  setShowResponse(false);
-  setGeneratedResponse("");
-  setMultiResponses([]);
-  try{
-     if (toneMode === "single") {
-    // handle single tone
-   const response = await axios.post("http://localhost:8080/api/email/generate", {
-      emailContent,
-      tone
-    });
-    setGeneratedResponse(typeof response.data === 'string' ? response.data : JSON.stringify(response.data));
-  } else {
-    // handle multi-tone
-    const tones = ["formal", "casual", "friendly"];
-    const response= await axios.post("http://localhost:8080/api/email/generate",{
-      emailContent,
-      tones
-    });
-    setMultiResponses(typeof response.data === 'string' ? response.data : JSON.stringify(response.data));
-  }
-     setShowResponse(true);
-  }
-  catch (error){
-    console.error(error);
-    setError("Failed to generate response");
-  }
-  finally{
-    setLoading(false);
-  }
-  
-};
-
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError("");
+    setShowResponse(false);
+    setGeneratedResponse("");
+    setMultiResponses([]);
+    try {
+      if (toneMode === "single") {
+        // handle single tone
+        const response = await axios.post(
+          "http://localhost:8080/api/email/generate",
+          {
+            emailContent,
+            tone,
+          }
+        );
+        setGeneratedResponse(
+          typeof response.data === "string"
+            ? response.data
+            : JSON.stringify(response.data)
+        );
+      } else {
+        // handle multi-tone
+        const tones = ["formal", "casual", "friendly"];
+        const response = await axios.post(
+          "http://localhost:8080/api/email/generate",
+          {
+            emailContent,
+            tones,
+          }
+        );
+        setMultiResponses(
+          typeof response.data === "string"
+            ? response.data
+            : JSON.stringify(response.data)
+        );
+      }
+      setShowResponse(true);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to generate response");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -144,9 +155,16 @@ const handleGenerate = async () => {
                   readOnly
                   value={generatedResponse}
                 />
-                <Button onClick ={() =>navigator.clipboard.writeText(generatedResponse)} >Copy To Clipboard</Button>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedResponse);
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 2500);
+                  }}
+                >
+                  Copy To Clipboard
+                </Button>
               </div>
-              
             )}
 
             {showResponse && toneMode === "multi" && (
@@ -169,6 +187,11 @@ const handleGenerate = async () => {
           </CardContent>
         </Card>
       </section>
+      {showToast && (
+        <div className="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-md transition-opacity duration-300 z-50">
+          Copied to clipboard!
+        </div>
+      )}
     </div>
   );
 }
