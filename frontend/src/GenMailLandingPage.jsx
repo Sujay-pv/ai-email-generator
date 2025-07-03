@@ -55,11 +55,18 @@ export default function GenMailLandingPage() {
             tones,
           }
         );
-        setMultiResponses(
-          typeof response.data === "string"
-            ? response.data
-            : JSON.stringify(response.data)
-        );
+        if (Array.isArray(response.data)) {
+          const validResponses = response.data.filter(
+            (res) =>
+              res &&
+              typeof res === "object" &&
+              typeof res.tone === "string" &&
+              typeof res.response === "string"
+          );
+          setMultiResponses(validResponses);
+        } else {
+          setMultiResponses([]);
+        }
       }
       setShowResponse(true);
     } catch (error) {
@@ -168,7 +175,7 @@ export default function GenMailLandingPage() {
             )}
 
             {showResponse && toneMode === "multi" && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-row gap-4">
                 {multiResponses.map((res, index) => (
                   <div key={index}>
                     <Label>
@@ -180,6 +187,12 @@ export default function GenMailLandingPage() {
                       readOnly
                       value={res.response}
                     />
+                    <Button
+                      className="mt-2"
+                      onClick={() => handleCopy(res.response)}
+                    >
+                      Copy
+                    </Button>
                   </div>
                 ))}
               </div>
