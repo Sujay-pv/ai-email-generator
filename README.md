@@ -40,7 +40,11 @@ GenMail is actively being developed. More features are being added. The current 
 
 ## 🚀 Demo
 <img width="779" height="419" alt="Screenshot 2025-07-12 000324" src="https://github.com/user-attachments/assets/98610204-9909-42a4-bfa4-e21bcb606fd9" />
+<br />
 <img width="185" height="246" alt="Screenshot 2025-07-12 000401" src="https://github.com/user-attachments/assets/8aef883d-0242-4721-afe7-515024c57096" />
+<br />
 <img width="248" height="61" alt="Screenshot 2025-07-12 000414" src="https://github.com/user-attachments/assets/59aebe90-bda2-4ae7-83fb-5a9561eff655" />
+<br />
 <img width="204" height="66" alt="Screenshot 2025-07-12 000422" src="https://github.com/user-attachments/assets/0bff03c8-7e81-4ed5-85f7-0be83f2e046f" />
+<br />
 
