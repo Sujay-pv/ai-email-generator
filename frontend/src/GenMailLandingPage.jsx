@@ -83,9 +83,9 @@ export default function GenMailLandingPage() {
       <nav className="bg-white shadow-md py-4 px-8 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">GenMail</div>
         <ul className="flex gap-6 text-sm font-medium text-gray-700">
-          <li className="hover:text-blue-600 cursor-pointer">Features</li>
+          <li className="hover:text-blue-600 cursor-pointer">Extension</li>
           <li className="hover:text-blue-600 cursor-pointer">Pricing</li>
-          <li className="hover:text-blue-600 cursor-pointer">About</li>
+          <li className="hover:text-blue-600 cursor-pointer" onClick={"/about"}>About</li>
           <li className="hover:text-blue-600 cursor-pointer">Contact</li>
         </ul>
       </nav>
@@ -168,6 +168,7 @@ export default function GenMailLandingPage() {
                     setShowToast(true);
                     setTimeout(() => setShowToast(false), 2500);
                   }}
+                  className = "mt-5"
                 >
                   Copy To Clipboard
                 </Button>

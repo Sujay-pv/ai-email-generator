@@ -67,9 +67,14 @@ public class GenMailService {
 
     private String buildPrompt(EmailRequest emailRequest) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Generate a professional email reply for the following email content.Please don't generate a subject line in the response.");
+        prompt.append(
+                "You're an intelligent email assistant. Your job is to craft thoughtful, context-aware replies to emails.\n" +
+                        "Analyze the sender's message, tone, and intent. Understand the emotional context (e.g. friendly, angry, urgent, apologetic) and respond appropriately.\n" +
+                        "Please write a professional, natural-sounding reply. Match the tone specified below, unless the sender’s tone requires adaptation.\n" +
+                        "Do NOT include a subject line.\n\n"
+        );
         if(emailRequest.getTone() != null && !emailRequest.getTone().isEmpty()){
-            prompt.append("Use a").append(emailRequest.getTone()).append(" tone.");
+            prompt.append("Preferred Reply tone: ").append(emailRequest.getTone()).append("\n\n");
         }
         prompt.append("\n Original email: \n").append(emailRequest.getEmailContent());
         return prompt.toString();
