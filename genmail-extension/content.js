@@ -1,15 +1,35 @@
 console.log("The content script has loaded");
 
 function findComposeToolbar() {
-  const selectors = [".btC", ".aDh", '[role="toolbar"]', ".gU.Up"];
-  for (const selector of selectors) {
-    const toolbar = document.querySelector(selector);
-    if (toolbar) {
-      return toolbar;
+  const composeDialogs = document.querySelectorAll('[role="toolbar"]');
+  console.log(`🧩 Found ${composeDialogs.length} compose dialogs`);
+
+  composeDialogs.forEach((dialog, i) => {
+    console.log(`📦 Dialog ${i} structure:`, dialog);
+    console.log(
+      `🧾 Inner HTML of dialog ${i}:`,
+      dialog.innerHTML.slice(0, 1000)
+    ); // trimmed for performance
+  });
+
+  for (const dialog of composeDialogs) {
+    const toolbars = dialog.querySelectorAll('[role="toolbar"]');
+    console.log(`🔍 Found ${toolbars.length} toolbars inside a dialog`);
+
+    for (const toolbar of toolbars) {
+      const buttons = toolbar.querySelectorAll("div[command]");
+      console.log(`🔘 Toolbar has ${buttons.length} command buttons`);
+      if (buttons.length > 0) {
+        console.log("✅ Returning toolbar");
+        return toolbar;
+      }
     }
   }
+
+  console.warn("❌ No valid toolbar found in any dialog");
   return null;
 }
+
 function getEmailContent() {
   const selectors = [
     ".h7",
@@ -20,10 +40,11 @@ function getEmailContent() {
   for (const selector of selectors) {
     const content = document.querySelector(selector);
     if (content) {
-      return content.innerText.trim();
+      const text = content.innerText?.trim();
+      if (text) return text;
     }
-    return "";
   }
+  return "";
 }
 
 function createAIButton() {
@@ -100,7 +121,8 @@ function injectButton() {
 
   const toolbar = findComposeToolbar();
   if (!toolbar) {
-    console.log("Toolbar not found");
+    console.log("Toolbar not found, retrying...");
+    setTimeout(injectButton, 300); // retry after 300ms
     return;
   }
 
